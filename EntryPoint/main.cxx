@@ -3,13 +3,12 @@
 
 void OnKeyPressed(int* ch);
 
-SimpleGame::InputHandler inpHdler;
 bool running = true;
 
 int main()
 {
-    inpHdler.Connect(OnKeyPressed);
-    inpHdler.StartReceiving();
+    SimpleGame::InputHandler::keyUp.Connect(OnKeyPressed);
+    SimpleGame::InputHandler::StartReceiving();
 
     while(running)
     {
@@ -28,6 +27,6 @@ void OnKeyPressed(int* ch)
     if (*ch == (int)zero)
     {
         running = false;
-        inpHdler.StopReceiving();
+        SimpleGame::InputHandler::StopReceiving();
     }
 }

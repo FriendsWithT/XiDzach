@@ -1,5 +1,6 @@
 #include <WinThread.hxx>
 #include <windows.h>
+#include <assert.h>
 #include <iostream>
 
 namespace SimpleGame
@@ -7,20 +8,30 @@ namespace SimpleGame
     class InputHandler
     {
         private:
-            HANDLE _threadHdr;
-            bool _working;
-            bool _threadExited;
-            int _latestInput;
-            void (*_keyPressCallback)(int*);
+            class Event
+            {
+                private:
+                    void (*_eventCallback)(int*);
+                public:
+                    Event();
+                    void Connect(void (*_eventCallback)(int*));
+                    void Invoke();      //run the function connected to this event
+            };
+
+            static HANDLE _threadHdr;
+            static int _latestInput;
+            static HHOOK _keyPrsHook;
 
             friend DWORD WINAPI _receiveLoop(LPVOID inpHdr);     //friend func to match createDefaultThread's arg list
-            void Invoke();
+            friend LRESULT CALLBACK _hookCallback(int nCode, WPARAM wParam, LPARAM lParam);
         public:
-            InputHandler();
-            void StartReceiving();
-            void StopReceiving();
-            void Connect(void (*onKeyPressed)(int*));
+            static void StartReceiving();
+            static void StopReceiving();
+
+            static Event keyUp;
+            static Event keyDown;
     };
 
     DWORD WINAPI _receiveLoop(LPVOID inpHdr);
+    LRESULT CALLBACK _hookCallback(int nCode, WPARAM wParam, LPARAM lParam);
 }

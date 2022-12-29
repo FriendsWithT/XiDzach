@@ -1,45 +1,76 @@
 #include <InputHandler.hxx>
 
-SimpleGame::InputHandler::InputHandler()
+/*
+ * Event class implementation
+ */
+
+SimpleGame::InputHandler::Event::Event()
 {
+    this->_eventCallback = NULL;
 }
+
+void SimpleGame::InputHandler::Event::Connect(void (*eventCallback)(int*))
+{
+    this->_eventCallback = eventCallback;
+}
+
+void SimpleGame::InputHandler::Event::Invoke()
+{
+    assert(this->_eventCallback);
+    this->_eventCallback(&(SimpleGame::InputHandler::_latestInput));
+}
+
+/*
+ * InputHandler class implementation
+ */
 
 void SimpleGame::InputHandler::StartReceiving()
 {
-    this->_working = true;
-
-    HANDLE _threadHdr = SimpleGame::Thread::createDefaultThread(SimpleGame::_receiveLoop, this);
-    this->_threadHdr = _threadHdr;
+    _threadHdr = SimpleGame::Thread::createDefaultThread(SimpleGame::_receiveLoop, NULL);
 }
 
 void SimpleGame::InputHandler::StopReceiving()
 {
-    this->_working = false;
-    while(!this->_threadExited);
-    CloseHandle(this->_threadHdr);
-}
-
-void SimpleGame::InputHandler::Connect(void (*onKeyPressed)(int*))
-{
-    this->_keyPressCallback = onKeyPressed;
-}
-
-void SimpleGame::InputHandler::Invoke()
-{
-    this->_keyPressCallback(&(this->_latestInput));
+    assert(_keyPrsHook);
+    PostQuitMessage(0);     //break the msg loop
+    UnhookWindowsHookEx(_keyPrsHook);
 }
 
 DWORD SimpleGame::_receiveLoop(LPVOID inpHdr)
 {
-    SimpleGame::InputHandler *inputHandler = (SimpleGame::InputHandler*) inpHdr;
-    while(inputHandler->_working)
+    SimpleGame::InputHandler::_keyPrsHook = SetWindowsHookEx(WH_KEYBOARD_LL, SimpleGame::_hookCallback, NULL, 0);       //registering the hook
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0) != 0)
     {
-        std::cout << "Thread waiting for input" << std::endl;
-        int input = std::cin.get();
-        inputHandler->_latestInput = input;
-        inputHandler->Invoke();
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
     }
-    inputHandler->_threadExited = true;
 
-    return 0;
+    assert(SimpleGame::InputHandler::_threadHdr);
+    CloseHandle(SimpleGame::InputHandler::_threadHdr);
+
+    return 0;       //thread exit
 }
+
+LRESULT CALLBACK SimpleGame::_hookCallback(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    PKBDLLHOOKSTRUCT key = (PKBDLLHOOKSTRUCT)lParam;
+
+    if (wParam == WM_KEYDOWN && nCode == HC_ACTION)
+    {
+        SimpleGame::InputHandler::_latestInput = key->vkCode;
+        SimpleGame::InputHandler::keyUp.Invoke();
+    }
+
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+/*
+ * init static members
+ */
+SimpleGame::InputHandler::Event SimpleGame::InputHandler::keyUp;
+SimpleGame::InputHandler::Event SimpleGame::InputHandler::keyDown;
+
+HANDLE SimpleGame::InputHandler::_threadHdr = NULL;
+int SimpleGame::InputHandler::_latestInput = 0;
+HHOOK SimpleGame::InputHandler::_keyPrsHook = NULL;
