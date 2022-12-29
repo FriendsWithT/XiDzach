@@ -16,8 +16,8 @@ void SimpleGame::InputHandler::Event::Connect(void (*eventCallback)(int*))
 
 void SimpleGame::InputHandler::Event::Invoke()
 {
-    assert(this->_eventCallback);
-    this->_eventCallback(&(SimpleGame::InputHandler::_latestInput));
+    if (this->_eventCallback)
+        this->_eventCallback(&(SimpleGame::InputHandler::_latestInput));
 }
 
 /*
@@ -38,6 +38,7 @@ void SimpleGame::InputHandler::StopReceiving()
 
 DWORD SimpleGame::_receiveLoop(LPVOID inpHdr)
 {
+    //when msg comes, _hookCallback will be called
     SimpleGame::InputHandler::_keyPrsHook = SetWindowsHookEx(WH_KEYBOARD_LL, SimpleGame::_hookCallback, NULL, 0);       //registering the hook
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0) != 0)
@@ -56,10 +57,13 @@ LRESULT CALLBACK SimpleGame::_hookCallback(int nCode, WPARAM wParam, LPARAM lPar
 {
     PKBDLLHOOKSTRUCT key = (PKBDLLHOOKSTRUCT)lParam;
 
-    if (wParam == WM_KEYDOWN && nCode == HC_ACTION)
+    if (nCode == HC_ACTION)
     {
         SimpleGame::InputHandler::_latestInput = key->vkCode;
-        SimpleGame::InputHandler::keyUp.Invoke();
+        if (wParam == WM_KEYUP)
+            SimpleGame::InputHandler::keyUp.Invoke();
+        else if (wParam == WM_KEYDOWN)
+            SimpleGame::InputHandler::keyDown.Invoke();
     }
 
     return CallNextHookEx(NULL, nCode, wParam, lParam);
