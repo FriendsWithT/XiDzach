@@ -5,7 +5,7 @@
 
 namespace SimpleGame
 {
-    class InputHandler
+    class InputService
     {
         private:
             class Event

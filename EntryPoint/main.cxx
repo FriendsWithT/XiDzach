@@ -1,4 +1,4 @@
-#include <InputHandler.hxx>
+#include <InputService.hxx>
 #include <iostream>
 
 void OnKeyPressed(int* ch);
@@ -7,8 +7,8 @@ bool running = true;
 
 int main()
 {
-    SimpleGame::InputHandler::keyUp.Connect(OnKeyPressed);
-    SimpleGame::InputHandler::StartReceiving();
+    SimpleGame::InputService::keyUp.Connect(OnKeyPressed);
+    SimpleGame::InputService::StartReceiving();
 
     while(running)
     {
@@ -27,6 +27,6 @@ void OnKeyPressed(int* ch)
     if (*ch == (int)zero)
     {
         running = false;
-        SimpleGame::InputHandler::StopReceiving();
+        SimpleGame::InputService::StopReceiving();
     }
 }

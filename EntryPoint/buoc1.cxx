@@ -1,9 +1,9 @@
-#include <InputHandler.hxx>
+#include <InputService.hxx>
 #include <iostream>
 
 void OnKeyPressed(int* ch);
 
-SimpleGame::InputHandler inpHdler;
+SimpleGame::InputService inpHdler;
 bool running = true;
 
 int main()
