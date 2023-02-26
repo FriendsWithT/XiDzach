@@ -1,7 +1,6 @@
 #include <WinThread.hxx>
 #include <windows.h>
 #include <assert.h>
-#include <iostream>
 
 namespace SimpleGame
 {
@@ -22,7 +21,7 @@ namespace SimpleGame
             static int _latestInput;
             static HHOOK _keyPrsHook;
 
-            friend DWORD WINAPI _receiveLoop(LPVOID inpHdr);     //friend func to match createDefaultThread's arg list
+            friend DWORD WINAPI _receiveLoop(LPVOID thrdArg);     //friend func to match createDefaultThread's arg list
             friend LRESULT CALLBACK _hookCallback(int nCode, WPARAM wParam, LPARAM lParam);
         public:
             static void StartReceiving();
@@ -32,6 +31,6 @@ namespace SimpleGame
             static Event keyDown;
     };
 
-    DWORD WINAPI _receiveLoop(LPVOID inpHdr);
+    DWORD WINAPI _receiveLoop(LPVOID thrdArg);
     LRESULT CALLBACK _hookCallback(int nCode, WPARAM wParam, LPARAM lParam);
 }

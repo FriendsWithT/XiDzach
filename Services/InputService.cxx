@@ -36,7 +36,7 @@ void SimpleGame::InputService::StopReceiving()
     UnhookWindowsHookEx(_keyPrsHook);
 }
 
-DWORD SimpleGame::_receiveLoop(LPVOID inpHdr)
+DWORD SimpleGame::_receiveLoop(LPVOID thrdArg)
 {
     //when msg comes, _hookCallback will be called
     SimpleGame::InputService::_keyPrsHook = SetWindowsHookEx(WH_KEYBOARD_LL, SimpleGame::_hookCallback, NULL, 0);       //registering the hook

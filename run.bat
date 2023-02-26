@@ -6,7 +6,7 @@ set ENT_FODR="EntryPoint"
 set BIN_FODR="Bin"
 set ICLD_FODR="Include"
 set APP_FODR="App"
-
+set LIB_FODR="Lib"
 echo -----------Building in progress-----------
 
 ::building phase
@@ -14,11 +14,13 @@ echo Building WinThread.cxx
 g++ -c %THRD_FODR%/WinThread.cxx -I %ICLD_FODR% -o %BIN_FODR%/WinThread.o
 echo Building InputService.cxx
 g++ -c %SVC_FODR%/InputService.cxx -I %ICLD_FODR% -o %BIN_FODR%/InputService.o
+echo Building DisplayService.cxx
+g++ -c %SVC_FODR%/DisplayService.cxx -I %ICLD_FODR% -o %BIN_FODR%/DisplayService.o
 echo Building main.cxx
 g++ -c %ENT_FODR%/main.cxx -I %ICLD_FODR% -o %BIN_FODR%/main.o
 
 ::linking phase
 echo Linking bin files
-g++ %BIN_FODR%/* -o %APP_FODR%/game.exe
+g++ %BIN_FODR%/* -o %APP_FODR%/game.exe -L %LIB_FODR% -lgdi32
 
 echo -----------Building finished-----------
