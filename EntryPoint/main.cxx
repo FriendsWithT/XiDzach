@@ -1,18 +1,23 @@
 #include <InputService.hxx>
 #include <DisplayService.hxx>
+#include <TweenService.hxx>
 #include <iostream>
 
 void OnKeyPressed(int* ch);
 
 bool running = true;
-SimpleGame::Bitmap mainBitmap("../Sandbox/LAND3.BMP", SimpleGame::Vector2(0, 0));
+SimpleGame::Bitmap mainBitmap("../Sandbox/point.bmp", SimpleGame::Vector2(0, 0));
+SimpleGame::Bitmap background("../Sandbox/LAND3.BMP", SimpleGame::Vector2(0, 0));
+SimpleGame::Textbox text("Hello", SimpleGame::Vector2(0, 300), SimpleGame::Vector2(200, 200));
 
 int main()
 {
     SimpleGame::InputService::keyUp.Connect(OnKeyPressed);
     SimpleGame::InputService::StartReceiving();
 
-    SimpleGame::DisplayService::mainBitmap = &mainBitmap;
+    SimpleGame::DisplayService::Register(&background);
+    SimpleGame::DisplayService::Register(&mainBitmap);
+    SimpleGame::DisplayService::Register(&text);
     SimpleGame::DisplayService::OpenWindow();
 
     while(running)
@@ -27,30 +32,25 @@ int main()
 void OnKeyPressed(int* ch)
 {
     std::cout << "key pressed: " << *ch << std::endl;
-    SimpleGame::Vector2 position = mainBitmap.GetPosition();
+    SimpleGame::Vector2 target = mainBitmap.GetPosition() + SimpleGame::Vector2(200,0);
+    SimpleGame::TweenObject *twnObj = SimpleGame::TweenService::CreatePosTween(&mainBitmap, target, 0.5);
 
     char pressed = (char)*ch;
     switch (pressed)
     {
     case 'A':
-        position.SetX(position.GetX() - 1);
+        twnObj->start();
         break;
     case 'D':
-        position.SetX(position.GetX() + 1);
         break;
     case 'S':
-        position.SetY(position.GetY() + 1);
         break;
     case 'W':
-        position.SetY(position.GetY() - 1);
         break;
     
     default:
         break;
     }
-    
-    mainBitmap.SetPosition(position);
-    std::cout << "mainBitmap pos is: x[" << mainBitmap.GetPosition().GetX() << "], y[" << mainBitmap.GetPosition().GetY() << "]" << std::endl;
 
     if (pressed == '0')
     {

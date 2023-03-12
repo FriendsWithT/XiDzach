@@ -1,84 +1,6 @@
 #include <DisplayService.hxx>
 
 /*
- * Vector2 class implementation
- */
-
-SimpleGame::Vector2::Vector2() : _x(0), _y(0) {}
-
-SimpleGame::Vector2::Vector2(INT16 x, INT16 y): _x(x), _y(y) {}
-
-INT16 SimpleGame::Vector2::GetX() const
-{
-    return this->_x;
-}
-
-INT16 SimpleGame::Vector2::GetY() const
-{
-    return this->_y;
-}
-
-void SimpleGame::Vector2::SetX(const INT16 &x)
-{
-    this->_x = x;
-}
-
-void SimpleGame::Vector2::SetY(const INT16 &y)
-{
-    this->_y = y;
-}
-
-/*
- * Bitmap class implementation
- */
-
-SimpleGame::Bitmap::Bitmap() : _hBitmap(NULL) {}
-
-SimpleGame::Bitmap::Bitmap(char *fileName, SimpleGame::Vector2 position)
-{
-    OpenFile(fileName, position);
-}
-
-void SimpleGame::Bitmap::OpenFile(char *fileName, SimpleGame::Vector2 position)
-{
-    LPCWSTR wFileName = SimpleGame::charToWChar(fileName);
-    this->_hBitmap = (HBITMAP) LoadImageW(NULL, wFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    this->_fileName = wFileName;
-
-    assert(_hBitmap);   //abort entire program if file not exists
-}
-
-SimpleGame::Vector2 SimpleGame::Bitmap::GetPosition() const
-{
-    return this->_position;
-}
-
-HBITMAP SimpleGame::Bitmap::GetHandle() const
-{
-    return this->_hBitmap;
-}
-
-void SimpleGame::Bitmap::SetPosition(const Vector2 &position)
-{
-    if (position.GetX() >= 0 && position.GetY() >= 0)
-        this->_position = position;
-}
-
-void SimpleGame::Bitmap::Finalize()
-{
-    CloseHandle(this->_hBitmap);
-    free((LPVOID) this->_fileName);
-
-    this->_hBitmap = NULL;
-    this->_fileName = NULL;
-}
-
-SimpleGame::Bitmap::~Bitmap()
-{
-    this->Finalize();
-}
-
-/*
  * DisplayService class implementation
  */
 void SimpleGame::DisplayService::SetWindowName(char *name)
@@ -90,20 +12,26 @@ void SimpleGame::DisplayService::SetWindowName(char *name)
 void SimpleGame::DisplayService::OpenWindow()
 {
     _initMutex = (LPCRITICAL_SECTION) malloc(sizeof(CRITICAL_SECTION));
+    _initConVar = (PCONDITION_VARIABLE) malloc(sizeof(CONDITION_VARIABLE));
     InitializeCriticalSection(_initMutex);       //sync the following two threads
+    InitializeConditionVariable(_initConVar);
 
     assert(!_msgThreadHdr);    //only one window needed
     _msgThreadHdr = SimpleGame::Thread::createDefaultThread(SimpleGame::_msgReceiveLoop, NULL);
 
-    Sleep(3);       //wait for msg thread to accquire mutex first
     EnterCriticalSection(_initMutex);
-    _isDisplaying = true;
-    LeaveCriticalSection(_initMutex);
+    if(_isDisplaying)
+        LeaveCriticalSection(_initMutex);
+    else
+        SleepConditionVariableCS(_initConVar, _initMutex, INFINITE);        //if the window is not up then wait for it
+
     _displayThreadHdr = SimpleGame::Thread::createDefaultThread(SimpleGame::_displayLoop, NULL);
 
     DeleteCriticalSection(_initMutex);
     free(_initMutex);
+    free(_initConVar);
     _initMutex = NULL;
+    _initConVar = NULL;
 }
 
 void SimpleGame::DisplayService::_createWindow()
@@ -118,9 +46,11 @@ void SimpleGame::DisplayService::_createWindow()
     wc.lpfnWndProc   = SimpleGame::_windowProc;
     wc.hCursor       = LoadCursor(0, IDC_ARROW);
 
+    DWORD dwStyle = (WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU | WS_VISIBLE);
+
     RegisterClassW(&wc);
     HWND windowHdlr = CreateWindowW(wc.lpszClassName, _windowName,
-          WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+          dwStyle,
           _windowPos.GetX(), _windowPos.GetY(), _windowSize.GetX(), _windowSize.GetY(), NULL, NULL, hInstance, NULL);     //open an actual window
     
     _windowHdr = windowHdlr;
@@ -129,19 +59,18 @@ void SimpleGame::DisplayService::_createWindow()
 void SimpleGame::DisplayService::_drawScreen()
 {
     assert(_windowHdr);
-    assert(mainBitmap);
-
-    Vector2 bmpPos = mainBitmap->GetPosition();
     HDC hdcDest = GetDC(_windowHdr);
-    HDC hdcSrc = CreateCompatibleDC(hdcDest);
-    HGDIOBJ oldBitmap = SelectObject(hdcSrc, mainBitmap->GetHandle());
-    BITMAP bitmap;
 
-    GetObject(mainBitmap->GetHandle(), sizeof(bitmap), &bitmap);
-    BitBlt(hdcDest, bmpPos.GetX(), bmpPos.GetY(), bitmap.bmWidth, bitmap.bmHeight, hdcSrc, 0, 0, SRCCOPY);
+    std::vector<SimpleGame::GraphicObject *>::iterator objPtrIt;
+    std::vector<SimpleGame::GraphicObject *>::iterator objPtrBegin = _rgtdObjs.begin();
+    std::vector<SimpleGame::GraphicObject *>::iterator objPtrEnd = _rgtdObjs.end();
 
-    SelectObject(hdcSrc, oldBitmap);
-    DeleteDC(hdcSrc);
+    for (objPtrIt = objPtrBegin; objPtrIt != objPtrEnd; objPtrIt++)
+    {
+        SimpleGame::GraphicObject *objPtr = *objPtrIt;
+        objPtr->Draw(hdcDest);
+    }
+
     ReleaseDC(_windowHdr, hdcDest);
     //TODO: add mutex to avoid race cond when setting mainBitmap's position
 }
@@ -154,22 +83,22 @@ void SimpleGame::DisplayService::CloseWindow()
     //TODO: finalize any bitmap handles, etc...
 }
 
-void SimpleGame::DisplayService::RegisterBitmap(SimpleGame::Bitmap *bmpPtr)
+void SimpleGame::DisplayService::Register(SimpleGame::GraphicObject *objPtr)
 {
-    _rgtdBmps.push_back(bmpPtr);
+    _rgtdObjs.push_back(objPtr);
 }
 
-void SimpleGame::DisplayService::UnregisterBitmap(SimpleGame::Bitmap *bmpPtr)
+void SimpleGame::DisplayService::Unregister(SimpleGame::GraphicObject *objPtr)
 {
-    std::vector<SimpleGame::Bitmap *>::iterator bmpPtrIt;
-    std::vector<SimpleGame::Bitmap *>::iterator bmpPtrBegin = _rgtdBmps.begin();
-    std::vector<SimpleGame::Bitmap *>::iterator bmpPtrEnd = _rgtdBmps.end();
+    std::vector<SimpleGame::GraphicObject *>::iterator objPtrIt;
+    std::vector<SimpleGame::GraphicObject *>::iterator objPtrBegin = _rgtdObjs.begin();
+    std::vector<SimpleGame::GraphicObject *>::iterator objPtrEnd = _rgtdObjs.end();
 
-    for (bmpPtrIt = bmpPtrBegin; bmpPtrIt != bmpPtrBegin; bmpPtrIt++)
+    for (objPtrIt = objPtrBegin; objPtrIt != objPtrBegin; objPtrIt++)
     {
-        if (*bmpPtrIt == bmpPtr)
+        if (*objPtrIt == objPtr)
         {
-            _rgtdBmps.erase(bmpPtrIt);
+            _rgtdObjs.erase(objPtrIt);
             return;
         }
     }
@@ -186,8 +115,12 @@ DWORD SimpleGame::_msgReceiveLoop(LPVOID thrdArg)
     MSG msg;
 
     EnterCriticalSection(SimpleGame::DisplayService::_initMutex);
+
     SimpleGame::DisplayService::_createWindow();
+    SimpleGame::DisplayService::_isDisplaying = true;
+
     LeaveCriticalSection(SimpleGame::DisplayService::_initMutex);
+    WakeConditionVariable(SimpleGame::DisplayService::_initConVar);
 
     while (GetMessage(&msg, NULL, 0, 0)) 
     {
@@ -242,19 +175,11 @@ LRESULT SimpleGame::_windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-LPCWSTR SimpleGame::charToWChar(LPCSTR text)
-{
-    const size_t size = strlen(text) + 1;
-    // wchar_t* wText = new wchar_t[size];
-    wchar_t* wText = (wchar_t *) malloc(size * sizeof(wchar_t));
-    mbstowcs(wText, text, size);
-    return wText;
-}
-
 /*
  * init static members
  */
 LPCRITICAL_SECTION SimpleGame::DisplayService::_initMutex = NULL;
+PCONDITION_VARIABLE SimpleGame::DisplayService::_initConVar = NULL;
 
 HANDLE SimpleGame::DisplayService::_msgThreadHdr = NULL;
 HANDLE SimpleGame::DisplayService::_displayThreadHdr = NULL;
@@ -266,7 +191,6 @@ SimpleGame::Vector2 SimpleGame::DisplayService::_windowSize(700, 540);
 
 bool SimpleGame::DisplayService::_isDisplaying = false;
 
-std::vector<SimpleGame::Bitmap *> SimpleGame::DisplayService::_rgtdBmps;
+std::vector<SimpleGame::GraphicObject *> SimpleGame::DisplayService::_rgtdObjs;
 
-SimpleGame::Bitmap *SimpleGame::DisplayService::mainBitmap = NULL;
 unsigned short SimpleGame::DisplayService::frameLimit = 60;
