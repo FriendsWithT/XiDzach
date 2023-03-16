@@ -13,8 +13,10 @@ void SimpleGame::DisplayService::OpenWindow()
 {
     _initMutex = (LPCRITICAL_SECTION) malloc(sizeof(CRITICAL_SECTION));
     _initConVar = (PCONDITION_VARIABLE) malloc(sizeof(CONDITION_VARIABLE));
+    _displayMutex = (LPCRITICAL_SECTION) malloc(sizeof(CRITICAL_SECTION));
     InitializeCriticalSection(_initMutex);       //sync the following two threads
     InitializeConditionVariable(_initConVar);
+    InitializeCriticalSection(_displayMutex);
 
     assert(!_msgThreadHdr);    //only one window needed
     _msgThreadHdr = SimpleGame::Thread::createDefaultThread(SimpleGame::_msgReceiveLoop, NULL);
@@ -61,6 +63,7 @@ void SimpleGame::DisplayService::_drawScreen()
     assert(_windowHdr);
     HDC hdcDest = GetDC(_windowHdr);
 
+    EnterCriticalSection(DisplayService::_displayMutex);
     std::vector<SimpleGame::GraphicObject *>::iterator objPtrIt;
     std::vector<SimpleGame::GraphicObject *>::iterator objPtrBegin = _rgtdObjs.begin();
     std::vector<SimpleGame::GraphicObject *>::iterator objPtrEnd = _rgtdObjs.end();
@@ -70,6 +73,7 @@ void SimpleGame::DisplayService::_drawScreen()
         SimpleGame::GraphicObject *objPtr = *objPtrIt;
         objPtr->Draw(hdcDest);
     }
+    LeaveCriticalSection(DisplayService::_displayMutex);
 
     ReleaseDC(_windowHdr, hdcDest);
     //TODO: add mutex to avoid race cond when setting mainBitmap's position
@@ -80,28 +84,35 @@ void SimpleGame::DisplayService::CloseWindow()
     //close window along with the threads associated with it
     PostQuitMessage(0);
     _isDisplaying = false;
+    DeleteCriticalSection(_displayMutex);
+    free(_displayMutex);
     //TODO: finalize any bitmap handles, etc...
 }
 
 void SimpleGame::DisplayService::Register(SimpleGame::GraphicObject *objPtr)
 {
+    EnterCriticalSection(DisplayService::_displayMutex);
     _rgtdObjs.push_back(objPtr);
+    LeaveCriticalSection(DisplayService::_displayMutex);
 }
 
 void SimpleGame::DisplayService::Unregister(SimpleGame::GraphicObject *objPtr)
 {
+    EnterCriticalSection(DisplayService::_displayMutex);
     std::vector<SimpleGame::GraphicObject *>::iterator objPtrIt;
     std::vector<SimpleGame::GraphicObject *>::iterator objPtrBegin = _rgtdObjs.begin();
     std::vector<SimpleGame::GraphicObject *>::iterator objPtrEnd = _rgtdObjs.end();
 
-    for (objPtrIt = objPtrBegin; objPtrIt != objPtrBegin; objPtrIt++)
+    for (objPtrIt = objPtrBegin; objPtrIt != objPtrEnd; objPtrIt++)
     {
         if (*objPtrIt == objPtr)
         {
             _rgtdObjs.erase(objPtrIt);
+            LeaveCriticalSection(DisplayService::_displayMutex);
             return;
         }
     }
+    LeaveCriticalSection(DisplayService::_displayMutex);
 
     assert(0);      //illegal unregister
 }
@@ -180,6 +191,7 @@ LRESULT SimpleGame::_windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
  */
 LPCRITICAL_SECTION SimpleGame::DisplayService::_initMutex = NULL;
 PCONDITION_VARIABLE SimpleGame::DisplayService::_initConVar = NULL;
+LPCRITICAL_SECTION SimpleGame::DisplayService::_displayMutex = NULL;
 
 HANDLE SimpleGame::DisplayService::_msgThreadHdr = NULL;
 HANDLE SimpleGame::DisplayService::_displayThreadHdr = NULL;

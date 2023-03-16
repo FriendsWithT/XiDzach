@@ -3,6 +3,10 @@
 #include <math.h>
 #include <assert.h>
 
+/*
+ * PositionTweenObject implementation
+ */
+
 SimpleGame::PositionTweenObject::PositionTweenObject(GraphicObject *obj, Vector2 target, float duration)
 : SimpleGame::TweenObject(obj, duration)
 {
@@ -36,6 +40,10 @@ void SimpleGame::PositionTweenObject::_move()
     Vector2 newPos = this->_obj->GetPosition() + this->_direction;
     this->_obj->SetPosition(newPos);
 }
+
+/*
+ * TweenObject implementation
+ */
 
 SimpleGame::TweenObject::TweenObject(GraphicObject *obj, float duration)
 {
@@ -77,6 +85,10 @@ DWORD SimpleGame::_tweenRoutine(LPVOID thrdArg)
 
     return 0;   //thread exit
 }
+
+/*
+ * TweenService implementation
+ */
 
 SimpleGame::TweenObject* SimpleGame::TweenService::CreatePosTween(GraphicObject *obj, Vector2 target, float duration)
 {

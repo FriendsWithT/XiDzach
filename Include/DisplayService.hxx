@@ -16,6 +16,7 @@ namespace SimpleGame
         private:
             static LPCRITICAL_SECTION _initMutex;
             static PCONDITION_VARIABLE _initConVar;
+            static LPCRITICAL_SECTION _displayMutex;
 
             static HANDLE _msgThreadHdr;
             static HANDLE _displayThreadHdr;

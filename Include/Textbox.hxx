@@ -1,4 +1,5 @@
 #include <GraphicObject.hxx>
+#pragma once
 
 namespace SimpleGame
 {

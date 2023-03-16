@@ -1,4 +1,5 @@
 #include <WinThread.hxx>
+#include <Common.hxx>
 #include <windows.h>
 #include <assert.h>
 
@@ -10,11 +11,16 @@ namespace SimpleGame
             class Event
             {
                 private:
+                    LPCRITICAL_SECTION _waitMutex;
+                    PCONDITION_VARIABLE _waitConVar;
+                    bool _waiting;
                     void (*_eventCallback)(int*);
                 public:
                     Event();
+                    ~Event();
                     void Connect(void (*_eventCallback)(int*));
                     void Invoke();      //run the function connected to this event
+                    void Wait();
             };
 
             static HANDLE _threadHdr;

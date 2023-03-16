@@ -7,6 +7,18 @@
 SimpleGame::InputService::Event::Event()
 {
     this->_eventCallback = NULL;
+    this->_waitMutex = (LPCRITICAL_SECTION) malloc(sizeof(CRITICAL_SECTION));
+    this->_waitConVar = (PCONDITION_VARIABLE) malloc(sizeof(CONDITION_VARIABLE));
+    InitializeCriticalSection(this->_waitMutex);
+    InitializeConditionVariable(this->_waitConVar);
+    this->_waiting = false;
+}
+
+SimpleGame::InputService::Event::~Event()
+{
+    DeleteCriticalSection(this->_waitMutex);
+    free(this->_waitMutex);
+    free(this->_waitConVar);
 }
 
 void SimpleGame::InputService::Event::Connect(void (*eventCallback)(int*))
@@ -17,7 +29,26 @@ void SimpleGame::InputService::Event::Connect(void (*eventCallback)(int*))
 void SimpleGame::InputService::Event::Invoke()
 {
     if (this->_eventCallback)
+    {
+        EnterCriticalSection(this->_waitMutex);
         this->_eventCallback(&(SimpleGame::InputService::_latestInput));
+        LeaveCriticalSection(this->_waitMutex);
+        
+        if (this->_waiting)
+            WakeConditionVariable(this->_waitConVar);
+    }
+}
+
+void SimpleGame::InputService::Event::Wait()
+{
+    if (this->_eventCallback)
+    {
+        this->_waiting = true;
+        EnterCriticalSection(this->_waitMutex);
+        SleepConditionVariableCS(this->_waitConVar, this->_waitMutex, INFINITE);
+        LeaveCriticalSection(this->_waitMutex);
+        this->_waiting = false;
+    }
 }
 
 /*
