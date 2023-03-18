@@ -28,12 +28,12 @@ namespace SimpleGame
     {
         private:
             UINT16 _value;
-            Bitmap _bmp;
+            GameService::Bitmap _bmp;
         public:
             Card(CardSuit suit, CardRank rank);
             Card(); //back card
             UINT16 GetValue();
-            Bitmap* GetBmp();
+            GameService::Bitmap* GetBmp();
     };
 
     class GameFlow

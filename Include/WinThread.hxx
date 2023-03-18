@@ -1,9 +1,12 @@
+#define ADD_EXPORTS
+
 #include <windows.h>
+#include <Lib.hxx>
 #pragma once
 
-namespace SimpleGame
+namespace Osal
 {
-    class Thread
+    class ADDAPI Thread
     {
         public:
             static HANDLE createDefaultThread(DWORD (*ThreadProc)(LPVOID), LPVOID lpParameter);

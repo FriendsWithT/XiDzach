@@ -1,12 +1,15 @@
+#define ADD_EXPORTS
+
 #include <windows.h>
 #include <GraphicObject.hxx>
+#include <Lib.hxx>
 #include <Common.hxx>
 
 #define STD_BREAK_DUARATION 50
 
-namespace SimpleGame
+namespace GameService
 {
-    class TweenObject
+    class ADDAPI TweenObject
     {
         private:
             HANDLE _thrdHdr;
@@ -23,7 +26,7 @@ namespace SimpleGame
             void start();
     };
 
-    class PositionTweenObject : public TweenObject
+    class ADDAPI PositionTweenObject : public TweenObject
     {
         private:
             Vector2 _target;
@@ -37,7 +40,7 @@ namespace SimpleGame
             PositionTweenObject(GraphicObject *obj, Vector2 target, float duration);
     };
 
-    class TweenService
+    class ADDAPI TweenService
     {
         public:
             static TweenObject* CreatePosTween(GraphicObject *obj, Vector2 target, float duration);

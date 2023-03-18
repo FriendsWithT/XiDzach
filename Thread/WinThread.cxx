@@ -2,7 +2,7 @@
 
 #define DEFAULT 0
 
-HANDLE SimpleGame::Thread::createDefaultThread(DWORD (*ThreadProc)(LPVOID), LPVOID lpParameter)
+HANDLE Osal::Thread::createDefaultThread(DWORD (*ThreadProc)(LPVOID), LPVOID lpParameter)
 {
     LPSECURITY_ATTRIBUTES lpThreadAttributes = NULL;
     SIZE_T dwStackSize = DEFAULT;

@@ -1,9 +1,12 @@
+#define ADD_EXPORTS
+
 #include <GraphicObject.hxx>
+#include <Lib.hxx>
 #pragma once
 
-namespace SimpleGame
+namespace GameService
 {
-    class Textbox : public GraphicObject
+    class ADDAPI Textbox : public GraphicObject
     {
         private:
             LPCWSTR _wText;

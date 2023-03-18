@@ -1,17 +1,20 @@
+#define ADD_EXPORTS
+
 #include <WinThread.hxx>
 #include <GraphicObject.hxx>
 #include <Bitmap.hxx>
 #include <Textbox.hxx>
 #include <Common.hxx>
+#include <Lib.hxx>
 #include <windows.h>
 #include <assert.h>
 #include <iostream>
 #include <vector>
 
 
-namespace SimpleGame
+namespace GameService
 {
-    class DisplayService
+    class ADDAPI DisplayService
     {
         private:
             static LPCRITICAL_SECTION _initMutex;
@@ -42,6 +45,8 @@ namespace SimpleGame
             static void SetWindowName(char *name);
             static void Register(GraphicObject *objPtr);
             static void Unregister(GraphicObject *objPtr);
+            static void RegisterRange(std::vector<GraphicObject *> listObj);
+            static void UnregisterRange(std::vector<GraphicObject *> listObj);
 
             static UINT16 frameLimit;
     };

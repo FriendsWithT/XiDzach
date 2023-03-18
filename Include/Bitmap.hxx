@@ -1,9 +1,12 @@
+#define ADD_EXPORTS
+
 #include <GraphicObject.hxx>
+#include <Lib.hxx>
 #pragma once
 
-namespace SimpleGame
+namespace GameService
 {
-    class Bitmap : public GraphicObject
+    class ADDAPI Bitmap : public GraphicObject
     {
         private:
             HBITMAP _hBitmap;

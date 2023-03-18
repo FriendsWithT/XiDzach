@@ -7,8 +7,8 @@
  * PositionTweenObject implementation
  */
 
-SimpleGame::PositionTweenObject::PositionTweenObject(GraphicObject *obj, Vector2 target, float duration)
-: SimpleGame::TweenObject(obj, duration)
+GameService::PositionTweenObject::PositionTweenObject(GraphicObject *obj, Vector2 target, float duration)
+: GameService::TweenObject(obj, duration)
 {
     this->_obj = obj;
     this->_target = target;
@@ -21,7 +21,7 @@ SimpleGame::PositionTweenObject::PositionTweenObject(GraphicObject *obj, Vector2
     this->_movingMag = this->_totalMag / ratio;
 }
 
-void SimpleGame::PositionTweenObject::_updateDirection()
+void GameService::PositionTweenObject::_updateDirection()
 {
     Vector2 vec = this->_target - this->_obj->GetPosition();
     INT64 squareSum = vec.GetX() * vec.GetX() + vec.GetY() * vec.GetY();
@@ -35,7 +35,7 @@ void SimpleGame::PositionTweenObject::_updateDirection()
     this->_direction = Vector2(offX, offY);
 }
 
-void SimpleGame::PositionTweenObject::_move()
+void GameService::PositionTweenObject::_move()
 {
     Vector2 newPos = this->_obj->GetPosition() + this->_direction;
     this->_obj->SetPosition(newPos);
@@ -45,31 +45,31 @@ void SimpleGame::PositionTweenObject::_move()
  * TweenObject implementation
  */
 
-SimpleGame::TweenObject::TweenObject(GraphicObject *obj, float duration)
+GameService::TweenObject::TweenObject(GraphicObject *obj, float duration)
 {
     this->_obj = obj;
     this->_duration = duration;
     this->_thrdHdr = NULL;
 }
 
-void SimpleGame::TweenObject::start()
+void GameService::TweenObject::start()
 {
-    this->_thrdHdr = Thread::createDefaultThread(SimpleGame::_tweenRoutine, this);
+    this->_thrdHdr = Osal::Thread::createDefaultThread(GameService::_tweenRoutine, this);
 }
 
-void SimpleGame::TweenObject::_updateDirection()
+void GameService::TweenObject::_updateDirection()
 {
 
 }
 
-void SimpleGame::TweenObject::_move()
+void GameService::TweenObject::_move()
 {
     
 }
 
-DWORD SimpleGame::_tweenRoutine(LPVOID thrdArg)
+DWORD GameService::_tweenRoutine(LPVOID thrdArg)
 {
-    SimpleGame::TweenObject *twnObj = (SimpleGame::TweenObject *) thrdArg;
+    GameService::TweenObject *twnObj = (GameService::TweenObject *) thrdArg;
 
     INT16 loopCount = (twnObj->_duration * 1000) / STD_BREAK_DUARATION;
     for(int i = 0; i < loopCount; i++)
@@ -90,7 +90,7 @@ DWORD SimpleGame::_tweenRoutine(LPVOID thrdArg)
  * TweenService implementation
  */
 
-SimpleGame::TweenObject* SimpleGame::TweenService::CreatePosTween(GraphicObject *obj, Vector2 target, float duration)
+GameService::TweenObject* GameService::TweenService::CreatePosTween(GraphicObject *obj, Vector2 target, float duration)
 {
     PositionTweenObject *posTwnObj = new PositionTweenObject(obj, target, duration);
     return posTwnObj;

@@ -5,61 +5,52 @@
 #include <iostream>
 #include <vector>
 
-void OnKeyPressed(int* ch);
+void OnKeyPressed(void* ch);
 
 bool running = true;
-// SimpleGame::Bitmap mainBitmap("../Sandbox/point.bmp", SimpleGame::Vector2(0, 0));
-SimpleGame::Bitmap background("../Sandbox/LAND3.BMP", SimpleGame::Vector2(0, 0));
-// SimpleGame::Textbox text("Hello", SimpleGame::Vector2(0, 300), SimpleGame::Vector2(200, 200));
+GameService::Bitmap background("../Sandbox/LAND3.BMP", GameService::Vector2(0, 0));
 
 int main()
 {
-    SimpleGame::InputService::keyUp.Connect(OnKeyPressed);
-    SimpleGame::InputService::StartReceiving();
+    GameService::InputService::keyUp.Connect(OnKeyPressed);
+    GameService::InputService::StartReceiving();
 
-    // SimpleGame::DisplayService::Register(&background);
-    // SimpleGame::DisplayService::Register(&mainBitmap);
-    // SimpleGame::DisplayService::Register(&text);
-    SimpleGame::DisplayService::OpenWindow();
-    SimpleGame::DisplayService::Register(&background);
+    GameService::DisplayService::OpenWindow();
+    GameService::DisplayService::Register(&background);
     
     SimpleGame::GameFlow::LoadCards();
 
     while(running)
     {
         std::cout << "Main loop advanced" << std::endl;
-        // Sleep(2000);
+
         SimpleGame::GameFlow::ResetAll();
         std::vector<SimpleGame::Card*> chosenFour = SimpleGame::GameFlow::DrawFour();
-        chosenFour[0]->GetBmp()->SetPosition(SimpleGame::Vector2(0, 0));
-        chosenFour[1]->GetBmp()->SetPosition(SimpleGame::Vector2(300, 0));
-        chosenFour[2]->GetBmp()->SetPosition(SimpleGame::Vector2(0, 300));
-        chosenFour[3]->GetBmp()->SetPosition(SimpleGame::Vector2(300, 300));
+        chosenFour[0]->GetBmp()->SetPosition(GameService::Vector2(0, 0));
+        chosenFour[1]->GetBmp()->SetPosition(GameService::Vector2(300, 0));
+        chosenFour[2]->GetBmp()->SetPosition(GameService::Vector2(0, 300));
+        chosenFour[3]->GetBmp()->SetPosition(GameService::Vector2(300, 300));
 
-        SimpleGame::DisplayService::Register(chosenFour[0]->GetBmp());
-        SimpleGame::DisplayService::Register(chosenFour[1]->GetBmp());
-        SimpleGame::DisplayService::Register(chosenFour[2]->GetBmp());
-        SimpleGame::DisplayService::Register(chosenFour[3]->GetBmp());
+        std::vector<GameService::GraphicObject*> cardBmps{chosenFour[0]->GetBmp(), chosenFour[1]->GetBmp(),
+                                                         chosenFour[2]->GetBmp(), chosenFour[3]->GetBmp()};
 
-        SimpleGame::InputService::keyUp.Wait();
+        GameService::DisplayService::RegisterRange(cardBmps);
 
-        SimpleGame::DisplayService::Unregister(chosenFour[0]->GetBmp());
-        SimpleGame::DisplayService::Unregister(chosenFour[1]->GetBmp());
-        SimpleGame::DisplayService::Unregister(chosenFour[2]->GetBmp());
-        SimpleGame::DisplayService::Unregister(chosenFour[3]->GetBmp());
-        // Sleep(2000);
+        GameService::InputService::keyUp.Wait();
+
+        GameService::DisplayService::UnregisterRange(cardBmps);
+
     }
 
     return 0;
 }
 
-void OnKeyPressed(int* ch)
+void OnKeyPressed(void* ch)
 {
-    std::cout << "key pressed: " << *ch << std::endl;
-    // SimpleGame::Vector2 target = mainBitmap.GetPosition() + SimpleGame::Vector2(200,0);
-    // SimpleGame::TweenObject *twnObj = SimpleGame::TweenService::CreatePosTween(&mainBitmap, target, 0.5);
+    int *chCode = (int*)ch;
+    std::cout << "key pressed: " << *chCode << std::endl;
 
-    char pressed = (char)*ch;
+    char pressed = (char)*chCode;
     switch (pressed)
     {
     case 'A':
@@ -79,6 +70,6 @@ void OnKeyPressed(int* ch)
     if (pressed == '0')
     {
         running = false;
-        SimpleGame::InputService::StopReceiving();
+        GameService::InputService::StopReceiving();
     }
 }

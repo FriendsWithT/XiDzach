@@ -1,28 +1,17 @@
+#define ADD_EXPORTS
+
 #include <WinThread.hxx>
 #include <Common.hxx>
+#include <Event.hxx>
+#include <Lib.hxx>
 #include <windows.h>
 #include <assert.h>
 
-namespace SimpleGame
+namespace GameService
 {
-    class InputService
+    class ADDAPI InputService
     {
         private:
-            class Event
-            {
-                private:
-                    LPCRITICAL_SECTION _waitMutex;
-                    PCONDITION_VARIABLE _waitConVar;
-                    bool _waiting;
-                    void (*_eventCallback)(int*);
-                public:
-                    Event();
-                    ~Event();
-                    void Connect(void (*_eventCallback)(int*));
-                    void Invoke();      //run the function connected to this event
-                    void Wait();
-            };
-
             static HANDLE _threadHdr;
             static int _latestInput;
             static HHOOK _keyPrsHook;

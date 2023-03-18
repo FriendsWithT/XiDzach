@@ -1,9 +1,12 @@
+#define ADD_EXPORTS
+
 #include <Common.hxx>
+#include <Lib.hxx>
 #include <windows.h>
 
 #pragma once
 
-namespace SimpleGame
+namespace GameService
 {
     enum Color
     {
@@ -14,7 +17,7 @@ namespace SimpleGame
         rgbWhite = 0x00FFFFFF,
     };
 
-    class Vector2
+    class ADDAPI Vector2
     {
         private:
             INT16 _x, _y;
@@ -38,7 +41,7 @@ namespace SimpleGame
             }
     };
 
-    class GraphicObject
+    class ADDAPI GraphicObject
     {
         protected:
             Vector2 _position;

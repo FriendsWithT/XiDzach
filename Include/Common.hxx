@@ -14,7 +14,7 @@
 
 typedef CONDITION_VARIABLE *PCONDITION_VARIABLE;
 
-namespace SimpleGame
+namespace GameService
 {
     inline LPCWSTR charToWChar(LPCSTR text)
     {

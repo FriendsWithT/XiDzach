@@ -1,12 +1,12 @@
 #include <Textbox.hxx>
 #include <cstring>
 
-SimpleGame::Textbox::Textbox() : _wText(NULL), _textLen(0), _pRect(NULL), _finalized(false)
+GameService::Textbox::Textbox() : _wText(NULL), _textLen(0), _pRect(NULL), _finalized(false)
 {
 
 }
 
-SimpleGame::Textbox::Textbox(char *text, Vector2 position, Vector2 boxSize)
+GameService::Textbox::Textbox(char *text, Vector2 position, Vector2 boxSize)
 {
     this->_position = position;
     this->_wText = charToWChar(text);
@@ -23,7 +23,7 @@ SimpleGame::Textbox::Textbox(char *text, Vector2 position, Vector2 boxSize)
     this->_finalized = false;
 }
 
-void SimpleGame::Textbox::Draw(HDC targetHDC)
+void GameService::Textbox::Draw(HDC targetHDC)
 {
     SetTextColor(targetHDC, Color::rgbGreen);
     SetBkColor(targetHDC, Color::rgbBlack);
@@ -31,35 +31,35 @@ void SimpleGame::Textbox::Draw(HDC targetHDC)
     DrawTextW(targetHDC, this->_wText, this->_textLen, this->_pRect, DT_BOTTOM);
 }
 
-SimpleGame::Vector2 SimpleGame::Textbox::GetPosition() const
+GameService::Vector2 GameService::Textbox::GetPosition() const
 {
     return this->_position;
 }
 
-LPRECT SimpleGame::Textbox::getRectPtr() const
+LPRECT GameService::Textbox::getRectPtr() const
 {
     return this->_pRect;
 }
 
-void SimpleGame::Textbox::SetPosition(const Vector2 &position)
+void GameService::Textbox::SetPosition(const Vector2 &position)
 {
     if (position.GetX() >= 0 && position.GetY() >= 0)
         this->_position = position;
 }
 
-void SimpleGame::Textbox::SetText(const char *text)
+void GameService::Textbox::SetText(const char *text)
 {
     this->_wText = charToWChar(text);
     this->_textLen = strlen(text);
 }
 
-void SimpleGame::Textbox::SetSize(const Vector2 &boxSize)
+void GameService::Textbox::SetSize(const Vector2 &boxSize)
 {
     this->_boxSize = boxSize;
     this->_downRight = Vector2(this->_position.GetX() + boxSize.GetX(), this->_position.GetY() + boxSize.GetY());
 }
 
-void SimpleGame::Textbox::Finalize()
+void GameService::Textbox::Finalize()
 {
     free((LPVOID)this->_wText);
     free(this->_pRect);
@@ -69,7 +69,7 @@ void SimpleGame::Textbox::Finalize()
     this->_finalized = true;
 }
 
-SimpleGame::Textbox::~Textbox()
+GameService::Textbox::~Textbox()
 {
     if (!this->_finalized) this->Finalize();
 }

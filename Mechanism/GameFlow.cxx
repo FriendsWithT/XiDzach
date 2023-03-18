@@ -13,7 +13,7 @@ SimpleGame::Card::Card(SimpleGame::CardSuit suit, SimpleGame::CardRank rank)
         postfix = "0" + postfix;
     
     std::string fileName = GameFlow::bmpDir + prefix + postfix + ".bmp";
-    this->_bmp = Bitmap((char *)fileName.c_str(), Vector2(0, 0));
+    this->_bmp = GameService::Bitmap((char *)fileName.c_str(), GameService::Vector2(0, 0));
 }
 
 SimpleGame::Card::Card()
@@ -21,7 +21,7 @@ SimpleGame::Card::Card()
     this->_value = 0;
 
     std::string fileName = GameFlow::bmpDir + "back.bmp";
-    this->_bmp = Bitmap((char *)fileName.c_str(), Vector2(0, 0));
+    this->_bmp = GameService::Bitmap((char *)fileName.c_str(), GameService::Vector2(0, 0));
 }
 
 UINT16 SimpleGame::Card::GetValue()
@@ -29,7 +29,7 @@ UINT16 SimpleGame::Card::GetValue()
     return this->_value;
 }
 
-SimpleGame::Bitmap* SimpleGame::Card::GetBmp()
+GameService::Bitmap* SimpleGame::Card::GetBmp()
 {
     return &(this->_bmp);
 }
@@ -60,7 +60,8 @@ void SimpleGame::GameFlow::_resetIdxPool()
 {
     _idxPool.clear();
 
-    for (int i = 0; i < _cardNum; i++)
+    int max = _cardNum - 1; //chose anything except the back card
+    for (int i = 0; i < max; i++)
     {
         _idxPool.push_back(i);
     }
