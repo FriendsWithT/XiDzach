@@ -39,6 +39,11 @@ namespace GameService
             {
                 return Vector2(this->_x + other.GetX(), this->_y + other.GetY());
             }
+
+            Vector2 operator * (int mul)
+            {
+                return Vector2(this->_x * mul, this->_y * mul);
+            }
     };
 
     class ADDAPI GraphicObject
