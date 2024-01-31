@@ -18,12 +18,14 @@ namespace SimpleGame
 {
     enum GamePhase
     {
+        CREDIT_SCREEN,
         WELCOME_SCREEN,
+        ADJUSTING_WAGER,
         DRAWING_FOUR_CARDS,
         PLAYER_TURN,
         BOT_TURN,
-        EVALUATE,
-        RESULT_SCREEN
+        EVALUATING,
+        RESULT_ANNOUNCE
     };
 
     enum Subject

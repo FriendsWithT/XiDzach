@@ -210,6 +210,7 @@ bool SimpleGame::GameFlow::_checkBlackjack(Subject player)
 {
     std::vector<Card*> *playerCards = &myCards;
     if (player == Subject::BOT) playerCards = &botCards;
+    assert(playerCards->size() == 2);   //use in early game state only
 
     CardRank card1Rank = playerCards->at(0)->GetRank();
     CardRank card2Rank = playerCards->at(1)->GetRank();

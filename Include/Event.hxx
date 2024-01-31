@@ -1,7 +1,7 @@
-#define ADD_EXPORTS
-
 #include <windows.h>
 #include <Lib.hxx>
+
+#pragma once
 
 namespace GameService
 {

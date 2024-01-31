@@ -1,3 +1,5 @@
+#define ADD_EXPORTS
+
 #include <Bitmap.hxx>
 #include <assert.h>
 

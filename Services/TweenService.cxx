@@ -1,3 +1,5 @@
+#define ADD_EXPORTS
+
 #include <TweenService.hxx>
 #include <WinThread.hxx>
 #include <math.h>

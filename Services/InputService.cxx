@@ -1,3 +1,5 @@
+#define ADD_EXPORTS
+
 #include <InputService.hxx>
 
 void GameService::InputService::StartReceiving()

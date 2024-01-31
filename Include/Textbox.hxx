@@ -1,5 +1,3 @@
-#define ADD_EXPORTS
-
 #include <GraphicObject.hxx>
 #include <Lib.hxx>
 #pragma once

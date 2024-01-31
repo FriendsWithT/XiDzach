@@ -1,5 +1,3 @@
-#define ADD_EXPORTS
-
 #include <Common.hxx>
 #include <Lib.hxx>
 #include <windows.h>

@@ -1,5 +1,3 @@
-#define ADD_EXPORTS
-
 #include <windows.h>
 #include <GraphicObject.hxx>
 #include <Lib.hxx>

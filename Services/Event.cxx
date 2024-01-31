@@ -1,3 +1,5 @@
+#define ADD_EXPORTS
+
 #include <Event.hxx>
 
 GameService::Event::Event()

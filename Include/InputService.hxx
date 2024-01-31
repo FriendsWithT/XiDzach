@@ -1,5 +1,3 @@
-#define ADD_EXPORTS
-
 #include <WinThread.hxx>
 #include <Common.hxx>
 #include <Event.hxx>

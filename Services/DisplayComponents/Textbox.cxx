@@ -1,3 +1,5 @@
+#define ADD_EXPORTS
+
 #include <Textbox.hxx>
 #include <cstring>
 

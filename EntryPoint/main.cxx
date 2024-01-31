@@ -39,7 +39,7 @@ int main()
         currentPhase = SimpleGame::GamePhase::DRAWING_FOUR_CARDS;
         DrawFourCards(&myCardBmps, &botCardBmps);
 
-        currentPhase = SimpleGame::GamePhase::EVALUATE;
+        currentPhase = SimpleGame::GamePhase::EVALUATING;
         winner = SimpleGame::GameFlow::lookForBlackjack();
 
         if (winner == SimpleGame::Subject::Neutral)
@@ -70,7 +70,7 @@ int main()
             }
             GameService::InputService::keyUp.Wait();
 
-            currentPhase = SimpleGame::GamePhase::EVALUATE;
+            currentPhase = SimpleGame::GamePhase::EVALUATING;
             winner = SimpleGame::GameFlow::AnnounceWinner();
         }
 
@@ -78,6 +78,7 @@ int main()
 
         GameService::InputService::keyUp.Wait();
 
+        currentPhase = SimpleGame::GamePhase::RESULT_ANNOUNCE;
         std::cout << "The winner is: " << static_cast<int>(winner) <<std::endl;
 
         GameService::DisplayService::UnregisterRange(myCardBmps);
